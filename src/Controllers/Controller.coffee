@@ -1,18 +1,57 @@
 class Controller extends Backbone.Router
     initialize: ->
         @view = new mainView
-    routes :
-        'trains/from/:from/to/:to' : 'trainsFromTo'
 
-    trainsFromTo:(from,to) ->
+    startTimer: =>
+      @trains.stop() unless @trains is undefined or null
+      @trains.start() unless @trains is undefined or null
+      @timerStatus = true ;
+
+    stopTimer: =>
+      @trains.stop() unless @trains is undefined or null
+      @timerStatus = false
+
+    _updateTimerRefs: (trains)=>
+      if @timerStatus is true
+        console.debug 'restart timer'
+        @stopTimer()
+        @trains = trains
+      else
+        console.debug 'timer never started'
+        @trains = trains
+      @startTimer()
+
+
+
+    routes :
+        ''                         : 'emptySelection'
+        'trains/from/:from/to/:to' : 'trainsFromTo'
+        'trains/from/:from'        : 'trainsFrom'
+
+    trainsFromTo:(from,to) =>
+        console.debug 'from to'
         from = from.toUpperCase()
         to = to.toUpperCase()
         console.debug 'start'
-        @trains.stop() unless @trains is undefined
-        @trains = new TrainCollection null,
+        @stopTimer()
+        trains = new TrainCollection null,
             from:from
             to:to
-        @view.trainList.setTrainList @trains
+        @view.trainList.setTrainList trains
         @view.trainList.refresh()
-        @trains.start()
-        console.dir @trains
+        @_updateTimerRefs(trains)
+
+    trainsFrom:(from) =>
+      console.debug 'from only'
+      from = from.toUpperCase()
+      @stopTimer()
+      trains = new TrainCollection null,
+            from:from
+      @view.trainList.setTrainList trains
+      @view.trainList.refresh()
+      @_updateTimerRefs(trains)
+
+    emptySelection: =>
+      @view.trainList.setTrainList()
+      @view.trainList.refresh()
+

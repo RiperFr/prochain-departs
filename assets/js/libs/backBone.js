@@ -735,6 +735,7 @@
       options || (options = {});
       if (!this.comparator) throw new Error('Cannot sort a set without a comparator');
       var boundComparator = _.bind(this.comparator, this);
+        console.debug('comparateur : '+this.comparator.length);
       if (this.comparator.length === 1) {
         this.models = this.sortBy(boundComparator);
       } else {

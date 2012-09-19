@@ -9,10 +9,14 @@ class TrainCollection extends Backbone.Collection
     model : Train
     initialize: (n,options)->
         console.debug 'initialize collection'
-        @from = options.from unless options is undefined
-        @to = options.to unless options is undefined
+        if options isnt undefined
+          @from = options.from unless options.from is undefined
+          @to = options.to unless options.to is undefined
     url: =>
-        "https://www.riper.fr/api/stif/trains/from/#{@from}/to/#{@to}"
+        if @to isnt undefined
+          "https://www.riper.fr/api/stif/trains/from/#{@from}/to/#{@to}"
+        else
+          "https://www.riper.fr/api/stif/trains/from/#{@from}"
     parse: (response,xhr)=>
         if xhr.status is 200 and response.status is true
             response.response
@@ -20,11 +24,7 @@ class TrainCollection extends Backbone.Collection
             console.debug 'Error in response from server with parameters '+"#{@from}/#{@to}"
             []
     cleanup: (ids) =>
-        console.debug "cleanup"
-        console.debug @models.length
-
         @.each (train)=>
-            console.dir  _.indexOf ids,train.get('id')
             if _.indexOf(ids,train.get('id')) is -1
                 console.debug "Train is outdated #{train.get('trainMissionCode')}"
                 @remove train

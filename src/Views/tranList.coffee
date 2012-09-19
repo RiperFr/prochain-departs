@@ -4,12 +4,15 @@ class trainList extends Backbone.View
         @counter = 0
         @render()
     render: ->
-        $(@el).append '<ul></ul>'
+
         if @trainList
-            @trainList.each (Train)=>
-                @appendTrain Train, @trainList
+          $(@el).append '<ul></ul>'
+          @trainList.each (Train)=>
+              @appendTrain Train, @trainList
         else
-            console.debug "no trainList collection"
+          empty = new emptyList()
+          $(@el).append empty.el
+
 
     refresh: =>
         console.debug 'reset view'
@@ -21,15 +24,20 @@ class trainList extends Backbone.View
         if @trainList then @trainList.unbind 'add', @appendTrain
         if @trainList then @trainList.unbind 'remove', @removeTrain
         if @trainList then @trainList.unbind 'reset', @refresh
-        @trainList = collection
-        @trainList.bind 'add', @appendTrain
-        @trainList.bind 'remove', @removeTrain
-        @trainList.bind 'reset', @refresh
+        if collection isnt undefined
+          @trainList = collection
+          @trainList.bind 'add', @appendTrain
+          @trainList.bind 'remove', @removeTrain
+          @trainList.bind 'reset', @refresh
+        else if @trainList
+          @trainList = null
 
+    clearTrainList : ->
+      @trainList = null ;
 
     appendTrain :(Train,collection) =>
         if Train.view is undefined
-            Train.view = new trainItem
+           Train.view = new trainItem
                                 model:Train
         $(@el).find('ul').first().append Train.view.el
     removeTrain : (Train,collection) =>
