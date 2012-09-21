@@ -1,4 +1,4 @@
-class Station extends Backbone.Model
+class Station extends bb.Model
     defaults:
         code : "code"
         name : "name"

@@ -1,4 +1,4 @@
-class mainView extends Backbone.View
+class mainView extends bb.View
     el:$ 'body'
     template: _.template """
       <div class="selector"></div>

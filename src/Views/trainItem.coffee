@@ -1,4 +1,4 @@
-class trainItem extends Backbone.View
+class trainItem extends bb.View
     model     : Train
     nodeName  : 'li'
     template  : _.template "Template Item Train {{trainMissionCode}} of {{trainHour}}"

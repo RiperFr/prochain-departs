@@ -1,4 +1,4 @@
-class selector extends Backbone.View
+class selector extends bb.View
   template: _.template """
   Prochains départs de <select class="selectFrom"></select> à <select class="selectTo"></select>
   """
@@ -21,11 +21,15 @@ class selector extends Backbone.View
     optionFrom = document.createElement 'option'
     optionFrom.innerHTML = Station.get('name')
     optionFrom.value = Station.get('code')
+    if Station.get('code') == @from
+      $(optionFrom).attr("selected", "selected")
     @selectFrom.append(optionFrom)
 
     optionTo = document.createElement 'option'
     optionTo.innerHTML = Station.get('name')
     optionTo.value = Station.get('code')
+    if Station.get('code') == @to
+      $(optionTo).attr("selected", "selected")
     @selectTo.append(optionTo)
 
   refreshStations :=>
@@ -33,14 +37,25 @@ class selector extends Backbone.View
     @selectTo.html '<option value="">Toutes direction</option>'
     @stations.each  @appendStation
 
+  setTrainFrom: (from)=>
+    @from = from
+    @refreshStations()
+  setTrainTo: (to)=>
+    @to = to
+    @refreshStations()
+
+  setTrainFromTo: (from,to) =>
+    @from = from
+    @to = to
+    @refreshStations()
 
   selectChanged :=>
     if @selectFrom.val() == ''
-      REGISTER.router.navigate('',{trigger: true})
+      REGISTER.router.navigate('')
     else if @selectTo.val() == ''
-      REGISTER.router.navigate('trains/from/'+@selectFrom.val(), {trigger: true})
+      REGISTER.router.navigate('trains/from/'+@selectFrom.val())
     else
-      REGISTER.router.navigate('trains/from/'+@selectFrom.val()+'/to/'+@selectTo.val(), {trigger: true})
+      REGISTER.router.navigate('trains/from/'+@selectFrom.val()+'/to/'+@selectTo.val())
   render : =>
     @.$el.html @template({})
     @selectFrom  = @.$('.selectFrom')

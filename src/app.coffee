@@ -1,7 +1,8 @@
 REGISTER = {}
 init = =>
     REGISTER.router = new Controller
-    Backbone.history.start({})
+    Backbone.history.start({pushState : true,sessionStorage : true,root: window.location.pathname})
+
     hash = Backbone.history.getHash()
     if hash is ""
         #REGISTER.router.navigate('trains/from/EYO/to/PAZ', {trigger: true})

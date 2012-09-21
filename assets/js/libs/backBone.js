@@ -962,7 +962,7 @@
   // browser does not support `onhashchange`, falls back to polling.
   var History = Backbone.History = function(options) {
     this.handlers = [];
-    _.bindAll(this, 'checkUrl');
+    _.bindAll(this, 'checkUrl','checkUrlSession');
     this.location = options && options.location || root.location;
     this.history = options && options.history || root.history;
   };
@@ -997,11 +997,16 @@
     // the hash, or the override.
     getFragment: function(fragment, forcePushState) {
       if (fragment == null) {
-        if (this._hasPushState || !this._wantsHashChange || forcePushState) {
+        if ((this._hasPushState || !this._wantsHashChange || forcePushState) && !this._hasSessionStorage) {
           fragment = this.location.pathname;
           var root = this.options.root.replace(trailingSlash, '');
           if (!fragment.indexOf(root)) fragment = fragment.substr(root.length);
-        } else {
+        } else if(this._hasSessionStorage){
+            fragment = sessionStorage.fragment
+            if(fragment == undefined){
+                fragment = '' ;
+            }
+        }else{
           fragment = this.getHash();
         }
       }
@@ -1018,12 +1023,13 @@
       // Is pushState desired ... is it available?
       this.options          = _.extend({}, {root: '/'}, this.options, options);
       this._wantsHashChange = this.options.hashChange !== false;
+      this._wantsSessionStorage = this.options.sessionStorage !== false;
       this._wantsPushState  = !!this.options.pushState;
       this._hasPushState    = !!(this.options.pushState && this.history && this.history.pushState);
+      this._hasSessionStorage = !!(this.options.sessionStorage && this.history && this.history.pushState);
       var fragment          = this.getFragment();
       var docMode           = document.documentMode;
       var oldIE             = (isExplorer.exec(navigator.userAgent.toLowerCase()) && (!docMode || docMode <= 7));
-
       if (oldIE && this._wantsHashChange) {
         this.iframe = Backbone.$('<iframe src="javascript:0" tabindex="-1" />').hide().appendTo('body')[0].contentWindow;
         this.navigate(fragment);
@@ -1031,13 +1037,15 @@
 
       // Depending on whether we're using pushState or hashes, and whether
       // 'onhashchange' is supported, determine how we check the URL state.
-      if (this._hasPushState) {
-        Backbone.$(window).bind('popstate', this.checkUrl);
-      } else if (this._wantsHashChange && ('onhashchange' in window) && !oldIE) {
-        Backbone.$(window).bind('hashchange', this.checkUrl);
-      } else if (this._wantsHashChange) {
-        this._checkUrlInterval = setInterval(this.checkUrl, this.interval);
-      }
+        if (this._hasPushState && !this._hasSessionStorage) {
+            Backbone.$(window).bind('popstate', this.checkUrl);
+        } else if (this._wantsHashChange && this._hasSessionStorage && !oldIE) {
+            this._checkUrlInterval = setInterval(this.checkUrlSession, this.interval);
+        } else if (this._wantsHashChange && ('onhashchange' in window) && !oldIE) {
+            Backbone.$(window).bind('hashchange', this.checkUrl);
+        } else if (this._wantsHashChange) {
+            this._checkUrlInterval = setInterval(this.checkUrl, this.interval);
+        }
 
       // Determine if we need to change the base url, for a pushState link
       // opened by a non-pushState browser.
@@ -1089,6 +1097,12 @@
       this.loadUrl() || this.loadUrl(this.getHash());
     },
 
+    checkUrlSession: function(e){
+        var current = sessionStorage.fragment
+        if (current === this.fragment) return false;
+        this.loadUrl(current);
+    },
+
     // Attempt to load the current URL fragment. If a route succeeds with a
     // match, returns `true`. If no defined routes matches the fragment,
     // returns `false`.
@@ -1119,12 +1133,12 @@
       var url = (frag.indexOf(this.options.root) !== 0 ? this.options.root : '') + frag;
 
       // If pushState is available, we use it to set the fragment as a real URL.
-      if (this._hasPushState) {
+      if (this._hasPushState && !this._hasSessionStorage) {
         this.history[options.replace ? 'replaceState' : 'pushState']({}, document.title, url);
 
       // If hash changes haven't been explicitly disabled, update the hash
       // fragment to store history.
-      } else if (this._wantsHashChange) {
+      } else if (this._wantsHashChange && !this._hasSessionStorage) {
         this._updateHash(this.location, frag, options.replace);
         if (this.iframe && (frag !== this.getFragment(this.getHash(this.iframe)))) {
           // Opening and closing the iframe tricks IE7 and earlier to push a
@@ -1136,6 +1150,8 @@
 
       // If you've told us that you explicitly don't want fallback hashchange-
       // based history, then `navigate` becomes a page refresh.
+      }else if(this._hasSessionStorage){
+           sessionStorage.fragment = frag ;
       } else {
         return this.location.assign(url);
       }

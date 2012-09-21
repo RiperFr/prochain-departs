@@ -1,9 +1,8 @@
 fs         = require 'fs'
 {exec}     = require 'child_process'
 util       = require 'util'
-appFiles  = [
+appFiles  = ['src/libs/bb.coffee']
 
-]
 
 task 'coffeeFiles', 'how much coffee you got?!', ->
   traverseFileSystem = (currentPath) ->
@@ -16,7 +15,8 @@ task 'coffeeFiles', 'how much coffee you got?!', ->
           appFiles.push currentFile
         else if stats.isDirectory()
           traverseFileSystem currentFile
-
+    for file in appFiles then do (file)->
+      util.log file
   traverseFileSystem 'src'
   util.log "#{appFiles.length} coffee files found."
   return appFiles
@@ -31,6 +31,9 @@ task 'watch', 'Watch prod source files and build changes', ->
         util.log "Saw change in #{file}"
         grrrr 'Whoa. Saw a change. Building. Hold plz.'
         invoke 'build'
+  point = ()->
+    util.log "..."
+  setInterval point,2000
 
 task 'build', 'Build single application file from source files', ->
   invoke 'coffeeFiles'
@@ -48,11 +51,11 @@ task 'build', 'Build single application file from source files', ->
           util.log 'Error compiling coffee file.'
           grrrr 'Uh, your coffee is bad.'
         else
-          fs.unlink 'assets/js/app.coffee', (err) ->
+          ###fs.unlink 'assets/js/app.coffee', (err) ->
             if err
-              util.log 'Couldn\'t delete the app.coffee file/'
-            util.log 'Done building coffee file.'
-            grrrr 'Okay, coffee is ready.'
+              util.log 'Couldn\'t delete the app.coffee file/'###
+          util.log 'Done building coffee file.'
+          grrrr 'Okay, coffee is ready.'
 
 grrrr = (message = '') ->
   options =

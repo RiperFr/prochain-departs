@@ -1,4 +1,4 @@
-class Controller extends Backbone.Router
+class Controller extends bb.Router
     initialize: ->
         @view = new mainView
 
@@ -38,6 +38,7 @@ class Controller extends Backbone.Router
             from:from
             to:to
         @view.trainList.setTrainList trains
+        @view.selector.setTrainFromTo from,to
         @view.trainList.refresh()
         @_updateTimerRefs(trains)
 
@@ -48,6 +49,7 @@ class Controller extends Backbone.Router
       trains = new TrainCollection null,
             from:from
       @view.trainList.setTrainList trains
+      @view.selector.setTrainFrom from
       @view.trainList.refresh()
       @_updateTimerRefs(trains)
 

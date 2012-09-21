@@ -1,4 +1,4 @@
-class Train extends Backbone.Model
+class Train extends bb.Model
     defaults:
         name : "name"
         mission : "Mission code"

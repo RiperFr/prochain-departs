@@ -1,4 +1,4 @@
-class trainList extends Backbone.View
+class trainList extends bb.View
     initialize: ->
         _.bindAll @
         @counter = 0
