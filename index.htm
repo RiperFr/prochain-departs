@@ -27,18 +27,33 @@
 </div>
 <div id="mainView"></div>
 
+<div class="logger" style="display:none;">
+    <ul>
+    </ul>
+</div>
 
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
-<script>window.jQuery || document.write('<script src="js/vendor/jquery-1.8.2.min.js"><\/script>')</script>
+
+<script src="assets/js/libs/jQuery.js"></script>
 
 <script src="assets/js/vendor/bootstrap.min.js"></script>
-
 <script src="assets/js/plugins.js"></script>
 <script src="assets/js/main.js"></script>
 
-<script src="assets/js/libs/jQuery.js"></script>
+<script>
+    function log(text){
+        var date = new Date();
+        var line = '<span class="time">'+date.toString()+'</span><span class="log">'+text+'</span>' ;
+        var el = document.createElement('li');
+        el.innerHTML = line ;
+
+        $('.logger').first().find('ul').prepend(el)
+    }
+    log('Logger start')
+
+</script>
 <script src="assets/js/libs/u.js"></script>
 <script src="assets/js/libs/backBone.js"></script>
+<script src="assets/js/libs/uniqid.js"></script>
 <script src="assets/js/app.js"></script>
 
 <script>

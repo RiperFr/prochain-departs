@@ -13,9 +13,9 @@ class TrainCollection extends Backbone.Collection
           @to = options.to unless options.to is undefined
     url: =>
         if @to isnt undefined and @to isnt null and @to != 'NULL'
-          "https://www.riper.fr/api/stif/trains/from/#{@from}/to/#{@to}"
+          "https://www.riper.fr/api/stif/trains/from/#{@from}/to/#{@to}?#{uniqid()}"
         else
-          "https://www.riper.fr/api/stif/trains/from/#{@from}"
+          "https://www.riper.fr/api/stif/trains/from/#{@from}?#{uniqid()}"
     parse: (response,xhr)=>
         if xhr.status is 200 and response.status is true
             response.response
@@ -25,6 +25,7 @@ class TrainCollection extends Backbone.Collection
     cleanup: (ids) =>
         @.each (train)=>
             if _.indexOf(ids,train.get('id')) is -1 ##-1 mean not present
+                log('One train has to be removed : '+train.get('trainMissionCode'));
                 @remove train
 
     start: =>
@@ -42,6 +43,8 @@ class TrainCollection extends Backbone.Collection
                 success: (n,response)=>
                     @working = false
                     ids = _.pluck response.response,'id'
+                    log('Train refresh success');
                     @cleanup ids
                 error : (n,reponse) =>
+                    log('!!!!!!!!!!!!!! Train refresh Failure !!!!!!!!!!!!!');
                     @working = false

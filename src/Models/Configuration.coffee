@@ -1,6 +1,6 @@
 class Configuration extends bb.Model
     defaults:
-        theme:'dark'
+        theme:'light'
         displayClock:true
         animate:true
     themeList:['dark','light']

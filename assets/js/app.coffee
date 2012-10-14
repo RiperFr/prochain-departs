@@ -12,7 +12,7 @@ REGISTER = {}
 init = =>
     REGISTER.router = new Controller
     Backbone.history.start({pushState: true, sessionStorage: true, root: window.location.pathname})
-
+    log('Initialising the app');
     hash = Backbone.history.getHash()
     if hash is ""
         #REGISTER.router.navigate('trains/from/EYO/to/PAZ', {trigger: true})
@@ -23,15 +23,19 @@ init = =>
 
 
 start = =>
+    log('Starting the app');
     REGISTER.router.startTimer()
 
 stop = =>
+    log('Stopping the app');
     REGISTER.router.stopTimer()
 
 pause = =>
+    log('Pausing the App');
     REGISTER.router.stopTimer()
 
 resume = =>
+    log('Resuming the app');
     REGISTER.router.startTimer()
 
 
@@ -39,7 +43,6 @@ if window.WinJS
     WinJS.Binding.optimizeBindingReferences = true
     app = WinJS.Application
     activation = Windows.ApplicationModel.Activation
-
     app.onactivated = (args)->
         if args.detail.kind == activation.ActivationKind.launch
             if args.detail.previousExecutionState != activation.ApplicationExecutionState.terminated
@@ -53,6 +56,9 @@ if window.WinJS
     app.oncheckpoint = (args)->
         #Will be suspended*
         pause()
+
+    webapp = Windows.UI.WebUI.WebUIApplication;
+    webapp.addEventListener("resuming", resume, false);
     app.start()
 else
     $(document).ready =>
@@ -62,7 +68,8 @@ else
 class Controller extends bb.Router
     initialize: ->
         if  localStorage.configuration
-            @config = new Configuration(localStorage.configuration)
+            #@config = new Configuration()
+            @config = new Configuration(JSON.parse(localStorage.configuration))
         else
             @config = new Configuration()
         @config.bind 'change', @saveConfig
@@ -78,7 +85,7 @@ class Controller extends bb.Router
         @resumed = true
 
     saveConfig: =>
-        localStorage.configuration = @config.toJSON()
+        localStorage.configuration = JSON.stringify(@config.toJSON())
     startTimer: =>
         @trains.stop() unless @trains is undefined or null
         @trains.start() unless @trains is undefined or null
@@ -184,7 +191,7 @@ class zlog
 
 class Configuration extends bb.Model
     defaults:
-        theme:'dark'
+        theme:'light'
         displayClock:true
         animate:true
     themeList:['dark','light']
@@ -239,9 +246,9 @@ class TrainCollection extends Backbone.Collection
           @to = options.to unless options.to is undefined
     url: =>
         if @to isnt undefined and @to isnt null and @to != 'NULL'
-          "https://www.riper.fr/api/stif/trains/from/#{@from}/to/#{@to}"
+          "https://www.riper.fr/api/stif/trains/from/#{@from}/to/#{@to}?#{uniqid()}"
         else
-          "https://www.riper.fr/api/stif/trains/from/#{@from}"
+          "https://www.riper.fr/api/stif/trains/from/#{@from}?#{uniqid()}"
     parse: (response,xhr)=>
         if xhr.status is 200 and response.status is true
             response.response
@@ -251,6 +258,7 @@ class TrainCollection extends Backbone.Collection
     cleanup: (ids) =>
         @.each (train)=>
             if _.indexOf(ids,train.get('id')) is -1 ##-1 mean not present
+                log('One train has to be removed : '+train.get('trainMissionCode'));
                 @remove train
 
     start: =>
@@ -268,8 +276,10 @@ class TrainCollection extends Backbone.Collection
                 success: (n,response)=>
                     @working = false
                     ids = _.pluck response.response,'id'
+                    log('Train refresh success');
                     @cleanup ids
                 error : (n,reponse) =>
+                    log('!!!!!!!!!!!!!! Train refresh Failure !!!!!!!!!!!!!');
                     @working = false
 
 class DigitalClock extends bb.View
@@ -354,11 +364,17 @@ class mainView extends bb.View
             <div class="span12 list"></div>
         </div>
         <div class="digitalClock"></div>
+        <div class="themeSelector"></div>
          """
     initialize: (options)->
-        @config = options.config unless !options && !options.config
+        @config = options.config
         _.bindAll @
         @render()
+    updateTheme: ()=>
+        if $('.themeSelector input[type="checkbox"]').is(':checked')
+            @config.set({theme:'light'})
+        else
+            @config.set({theme:'dark'})
     render: ->
         @trainList = new trainList()
         @selector = new selector()
@@ -367,6 +383,16 @@ class mainView extends bb.View
         @$('.list').append(@trainList.el)
         @$('.selector').append(@selector.el)
         @$('.digitalClock').append(@clock.el)
+        if if window.WinJS
+            MSApp.execUnsafeLocalFunction ()->
+                $('.themeSelector').html('<input type="checkbox" name="light" value="1" >')
+        else
+            $('.themeSelector').html('<input type="checkbox" name="light" value="1" >')
+
+        if @config.get('theme') == 'light'
+            $('.themeSelector input[type="checkbox"]').attr('checked',true);
+        $('.themeSelector input[type="checkbox"]').bind('change',@updateTheme)
+
 
 
 

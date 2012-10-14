@@ -172,19 +172,19 @@ body .trainLine.removed{
 body .trainLine.removed.realy{
 
     transition-property: all;
-    transition-duration: 2s;
+    transition-duration: 500ms;
     transition-timing-fonction: ease-in-out;
 
     -moz-transition-property: all;
-    -moz-transition-duration: 2s;
+    -moz-transition-duration: 500ms;
     -moz-transition-timing-fonction: ease-in-out;
 
     -o-transition-property: all;
-    -o-transition-duration: 2s;
+    -o-transition-duration: 500ms;
     -o-transition-timing-fonction: ease-in-out;
 
     -webkit-transition-property: all;
-    -webkit-transition-duration: 2s;
+    -webkit-transition-duration: 500ms;
     -webkit-transition-timing-fonction: ease-in-out;
 
     -o-animation : none ;
@@ -405,3 +405,47 @@ body .trainLine.removed.realy{
     src: url('http://www.fontsforweb.com/public/fonts/1132/MuliLight.eot');
     src: local("Muli Light"), url('http://www.fontsforweb.com/public/fonts/1132/MuliLight.ttf') format("truetype");
 }*/
+
+.logger ul,.logger ul li{
+    list-style: none;
+    margin:0;
+    padding:0;
+    line-height:9px;
+}
+.logger .time{
+    width:250px;
+    display:inline-block;
+}
+
+.logger ul li:nth-child(odd){
+    background-color:rgba(255,255,255,0.2);
+}
+.logger{
+    padding:3px;
+    margin-right:3px;
+    z-index: 1000;
+    max-height:200px;
+    min-height:20px;
+    overflow: scroll;
+    position:fixed;
+    bottom:-15px;
+    right:0;
+    left:200px;
+    background-color:#000000;
+    font-size: 8px;
+    line-height: 9px;
+}
+
+.row-fluid.logger [class*="span"]{
+    min-height: 0px;
+
+}
+
+
+.themeSelector{
+    display: block;
+    position:fixed;
+    right:10px;
+    bottom:10px;
+    line-height: 20px;
+}

@@ -1,7 +1,8 @@
 class Controller extends bb.Router
     initialize: ->
         if  localStorage.configuration
-            @config = new Configuration(localStorage.configuration)
+            #@config = new Configuration()
+            @config = new Configuration(JSON.parse(localStorage.configuration))
         else
             @config = new Configuration()
         @config.bind 'change', @saveConfig
@@ -17,7 +18,7 @@ class Controller extends bb.Router
         @resumed = true
 
     saveConfig: =>
-        localStorage.configuration = @config.toJSON()
+        localStorage.configuration = JSON.stringify(@config.toJSON())
     startTimer: =>
         @trains.stop() unless @trains is undefined or null
         @trains.start() unless @trains is undefined or null
