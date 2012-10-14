@@ -17,7 +17,7 @@ class trainList extends bb.View
 
 
     refresh: =>
-        console.debug 'reset view'
+
         $(@el).html ''
         @render()
 

@@ -6,10 +6,10 @@ init = =>
     hash = Backbone.history.getHash()
     if hash is ""
         #REGISTER.router.navigate('trains/from/EYO/to/PAZ', {trigger: true})
-        console.debug "change the fragment  of #{hash}"
-    else
-        console.debug "Already a fragment of #{hash}"
 
+    else
+
+    REGISTER.router.resume()
 
 
 start = =>

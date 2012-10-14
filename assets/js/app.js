@@ -53,10 +53,11 @@
     });
     hash = Backbone.history.getHash();
     if (hash === "") {
-      return console.debug("change the fragment  of " + hash);
+
     } else {
-      return console.debug("Already a fragment of " + hash);
+
     }
+    return REGISTER.router.resume();
   };
 
   start = function() {
@@ -98,6 +99,8 @@
       this.startTimer = __bind(this.startTimer, this);
 
       this.saveConfig = __bind(this.saveConfig, this);
+
+      this.resume = __bind(this.resume, this);
       return Controller.__super__.constructor.apply(this, arguments);
     }
 
@@ -111,6 +114,17 @@
       return this.view = new mainView({
         config: this.config
       });
+    };
+
+    Controller.prototype.resume = function() {
+      if (localStorage.from) {
+        if (localStorage.to) {
+          this.navigate("trains/from/" + localStorage.from + "/to/" + localStorage.to);
+        } else {
+          this.navigate("trains/from/" + localStorage.from);
+        }
+      }
+      return this.resumed = true;
     };
 
     Controller.prototype.saveConfig = function() {
@@ -136,11 +150,9 @@
 
     Controller.prototype._updateTimerRefs = function(trains) {
       if (this.timerStatus === true) {
-        console.debug('restart timer');
         this.stopTimer();
         this.trains = trains;
       } else {
-        console.debug('timer never started');
         this.trains = trains;
       }
       return this.startTimer();
@@ -154,10 +166,8 @@
 
     Controller.prototype.trainsFromTo = function(from, to) {
       var trains;
-      console.debug('from to');
       from = from.toUpperCase();
       to = to.toUpperCase();
-      console.debug('start');
       this.stopTimer();
       trains = new TrainCollection(null, {
         from: from,
@@ -166,12 +176,17 @@
       this.view.trainList.setTrainList(trains);
       this.view.selector.setTrainFromTo(from, to);
       this.view.trainList.refresh();
-      return this._updateTimerRefs(trains);
+      this._updateTimerRefs(trains);
+      if (!!this.resumed) {
+        localStorage.from = from;
+      }
+      if (!!this.resumed) {
+        return localStorage.to = to;
+      }
     };
 
     Controller.prototype.trainsFrom = function(from) {
       var trains;
-      console.debug('from only');
       from = from.toUpperCase();
       this.stopTimer();
       trains = new TrainCollection(null, {
@@ -180,12 +195,24 @@
       this.view.trainList.setTrainList(trains);
       this.view.selector.setTrainFrom(from);
       this.view.trainList.refresh();
-      return this._updateTimerRefs(trains);
+      this._updateTimerRefs(trains);
+      if (!!this.resumed) {
+        localStorage.from = from;
+      }
+      if (!!this.resumed) {
+        return localStorage.to = null;
+      }
     };
 
     Controller.prototype.emptySelection = function() {
       this.view.trainList.setTrainList();
-      return this.view.trainList.refresh();
+      this.view.trainList.refresh();
+      if (!!this.resumed) {
+        localStorage.from = null;
+      }
+      if (!!this.resumed) {
+        return localStorage.to = null;
+      }
     };
 
     return Controller;
@@ -241,17 +268,9 @@
       return this.enabled = false;
     };
 
-    zlog.prototype.debug = function(text) {
-      if (this.enabled === true) {
-        return console.debug(text);
-      }
-    };
+    zlog.prototype.debug = function(text) {};
 
-    zlog.prototype.dir = function(obj) {
-      if (this.enabled === true) {
-        return console.dir(obj);
-      }
-    };
+    zlog.prototype.dir = function(obj) {};
 
     return zlog;
 
@@ -277,14 +296,12 @@
     Configuration.prototype.themeList = ['dark', 'light'];
 
     Configuration.prototype.initialize = function() {
-      console.debug('initConfig');
       this.bind('change', this.updateSettigns);
       return this.updateSettigns();
     };
 
     Configuration.prototype.updateSettigns = function() {
       var theme, _i, _len, _ref;
-      console.debug('update settings');
       _ref = this.themeList;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         theme = _ref[_i];
@@ -330,9 +347,7 @@
 
     StationsCollection.prototype.model = Station;
 
-    StationsCollection.prototype.initialize = function(n, options) {
-      return console.debug('initialize stations collection');
-    };
+    StationsCollection.prototype.initialize = function(n, options) {};
 
     StationsCollection.prototype.url = function() {
       return "https://www.riper.fr/api/stif/stations";
@@ -342,7 +357,6 @@
       if (xhr.status === 200 && response.status === true) {
         return response.response;
       } else {
-        console.debug('Error in response from server with parameters ' + ("" + this.from + "/" + this.to));
         return [];
       }
     };
@@ -403,7 +417,6 @@
     TrainCollection.prototype.model = Train;
 
     TrainCollection.prototype.initialize = function(n, options) {
-      console.debug('initialize collection');
       if (options !== void 0) {
         if (options.from !== void 0) {
           this.from = options.from;
@@ -426,7 +439,6 @@
       if (xhr.status === 200 && response.status === true) {
         return response.response;
       } else {
-        console.debug('Error in response from server with parameters ' + ("" + this.from + "/" + this.to));
         return [];
       }
     };
@@ -435,7 +447,6 @@
       var _this = this;
       return this.each(function(train) {
         if (_.indexOf(ids, train.get('id')) === -1) {
-          console.debug("Train is outdated " + (train.get('trainMissionCode')));
           return _this.remove(train);
         }
       });
@@ -669,7 +680,6 @@
     selector.prototype.template = _.template("<div class=\"row-fluid selectorLine\">\n    <div class=\"span12 \">\n        <h5>Liste des prochains trains au départ de </h5><select class=\"selectFrom\"></select> <h5>en direction de</h5> <select class=\"selectTo\"></select>\n    </div>\n</div>");
 
     selector.prototype.initialize = function() {
-      console.debug('init selector');
       this.stations = new StationsCollection();
       this.connect();
       this.render();
@@ -690,7 +700,6 @@
 
     selector.prototype.appendStation = function(Station, collection) {
       var optionFrom, optionTo;
-      console.debug('append stations');
       optionFrom = document.createElement('option');
       optionFrom.innerHTML = Station.get('name');
       optionFrom.value = Station.get('code');
@@ -774,7 +783,6 @@
 
     trainItem.prototype.render = function() {
       var obj;
-      console.debug("Render train named " + (this.model.get('trainMissionCode')) + " at " + (new Date().toString()));
       obj = this.model.toJSON();
       if (obj.trainMention === null) {
         obj.trainMention = "";
@@ -832,89 +840,6 @@
     };
 
     trainList.prototype.refresh = function() {
-      console.debug('reset view');
-      $(this.el).html('');
-      return this.render();
-    };
-
-    trainList.prototype.setTrainList = function(collection) {
-      if (this.trainList) {
-        this.trainList.unbind('add', this.appendTrain);
-      }
-      if (this.trainList) {
-        this.trainList.unbind('remove', this.removeTrain);
-      }
-      if (this.trainList) {
-        this.trainList.unbind('reset', this.refresh);
-      }
-      if (collection !== void 0) {
-        this.trainList = collection;
-        this.trainList.bind('add', this.appendTrain);
-        this.trainList.bind('remove', this.removeTrain);
-        return this.trainList.bind('reset', this.refresh);
-      } else if (this.trainList) {
-        return this.trainList = null;
-      }
-    };
-
-    trainList.prototype.clearTrainList = function() {
-      return this.trainList = null;
-    };
-
-    trainList.prototype.appendTrain = function(Train, collection) {
-      if (Train.view === void 0) {
-        Train.view = new trainItem({
-          model: Train
-        });
-      }
-      return $(this.el).find('div').first().append(Train.view.el);
-    };
-
-    trainList.prototype.removeTrain = function(Train, collection) {
-      return Train.view.remove();
-    };
-
-    return trainList;
-
-  })(bb.View);
-
-  trainList = (function(_super) {
-
-    __extends(trainList, _super);
-
-    function trainList() {
-      this.removeTrain = __bind(this.removeTrain, this);
-
-      this.appendTrain = __bind(this.appendTrain, this);
-
-      this.refresh = __bind(this.refresh, this);
-      return trainList.__super__.constructor.apply(this, arguments);
-    }
-
-    trainList.prototype.initialize = function() {
-      _.bindAll(this);
-      this.counter = 0;
-      return this.render();
-    };
-
-    trainList.prototype.className = "row-fluid trainList";
-
-    trainList.prototype.render = function() {
-      var empty,
-        _this = this;
-      if (this.trainList) {
-        $(this.el).append('<div class="span12"></div>');
-        return this.trainList.each(function(Train) {
-          return _this.appendTrain(Train, _this.trainList);
-        });
-      } else {
-        empty = new emptyList();
-        return $(this.el).append(empty.el);
-      }
-    };
-
-    trainList.prototype.refresh = function() {
-      console.debug('reset view');
       $(this.el).html('');
       return this.render();
     };

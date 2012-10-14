@@ -7,7 +7,7 @@ class selector extends bb.View
     </div>
   """
   initialize : ->
-    console.debug('init selector')
+
     @stations = new StationsCollection()
     @connect()
     @render()
@@ -22,7 +22,7 @@ class selector extends bb.View
     @stations.bind 'reset', @refreshStations
 
   appendStation : (Station,collection)=>
-    console.debug 'append stations'
+
     optionFrom = document.createElement 'option'
     optionFrom.innerHTML = Station.get('name')
     optionFrom.value = Station.get('code')

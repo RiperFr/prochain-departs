@@ -16,10 +16,10 @@ init = =>
     hash = Backbone.history.getHash()
     if hash is ""
         #REGISTER.router.navigate('trains/from/EYO/to/PAZ', {trigger: true})
-        console.debug "change the fragment  of #{hash}"
-    else
-        console.debug "Already a fragment of #{hash}"
 
+    else
+
+    REGISTER.router.resume()
 
 
 start = =>
@@ -45,9 +45,16 @@ class Controller extends bb.Router
         else
             @config = new Configuration()
         @config.bind 'change',@saveConfig
-
         @view = new mainView({config:@config})
 
+
+    resume: =>
+        if localStorage.from
+            if localStorage.to
+                @navigate("trains/from/#{localStorage.from}/to/#{localStorage.to}")
+            else
+                @navigate("trains/from/#{localStorage.from}")
+        @resumed = true
 
     saveConfig: =>
         localStorage.configuration = @config.toJSON()
@@ -62,11 +69,11 @@ class Controller extends bb.Router
 
     _updateTimerRefs: (trains)=>
       if @timerStatus is true
-        console.debug 'restart timer'
+
         @stopTimer()
         @trains = trains
       else
-        console.debug 'timer never started'
+
         @trains = trains
       @startTimer()
 
@@ -78,10 +85,10 @@ class Controller extends bb.Router
         'trains/from/:from'        : 'trainsFrom'
 
     trainsFromTo:(from,to) =>
-        console.debug 'from to'
+
         from = from.toUpperCase()
         to = to.toUpperCase()
-        console.debug 'start'
+
         @stopTimer()
         trains = new TrainCollection null,
             from:from
@@ -90,9 +97,11 @@ class Controller extends bb.Router
         @view.selector.setTrainFromTo from,to
         @view.trainList.refresh()
         @_updateTimerRefs(trains)
+        localStorage.from = from unless !@resumed
+        localStorage.to = to unless !@resumed
 
     trainsFrom:(from) =>
-      console.debug 'from only'
+
       from = from.toUpperCase()
       @stopTimer()
       trains = new TrainCollection null,
@@ -101,10 +110,14 @@ class Controller extends bb.Router
       @view.selector.setTrainFrom from
       @view.trainList.refresh()
       @_updateTimerRefs(trains)
+      localStorage.from = from unless !@resumed
+      localStorage.to = null unless !@resumed
 
     emptySelection: =>
       @view.trainList.setTrainList()
       @view.trainList.refresh()
+      localStorage.from = null unless !@resumed
+      localStorage.to = null unless !@resumed
 
 
 
@@ -135,9 +148,9 @@ class zlog
         @enabled = false
 
     debug: (text) ->
-        console.debug(text) unless @enabled != true
+
     dir: (obj) ->
-        console.dir(obj) unless @enabled != true
+
 
 
 class Configuration extends bb.Model
@@ -147,11 +160,11 @@ class Configuration extends bb.Model
         animate:true
     themeList:['dark','light']
     initialize : =>
-        console.debug('initConfig')
+
         @.bind('change', @updateSettigns);
         @updateSettigns()
     updateSettigns: =>
-        console.debug('update settings');
+
         $('body').removeClass(theme) for theme in @themeList
         $('body').addClass(@.get('theme'));
 
@@ -165,14 +178,14 @@ class Station extends bb.Model
 class StationsCollection extends Backbone.Collection
     model : Station
     initialize: (n,options)->
-        console.debug 'initialize stations collection'
+
     url: =>
           "https://www.riper.fr/api/stif/stations"
     parse: (response,xhr)=>
         if xhr.status is 200 and response.status is true
             response.response
         else
-            console.debug 'Error in response from server with parameters '+"#{@from}/#{@to}"
+
             []
     comparator: (Station1,Station2)=>
       if Station1.get('name') == Station2.get('name') then return 0
@@ -192,7 +205,7 @@ class Train extends bb.Model
 class TrainCollection extends Backbone.Collection
     model : Train
     initialize: (n,options)->
-        console.debug 'initialize collection'
+
         if options isnt undefined
           @from = options.from unless options.from is undefined
           @to = options.to unless options.to is undefined
@@ -205,12 +218,12 @@ class TrainCollection extends Backbone.Collection
         if xhr.status is 200 and response.status is true
             response.response
         else
-            console.debug 'Error in response from server with parameters '+"#{@from}/#{@to}"
+
             []
     cleanup: (ids) =>
         @.each (train)=>
             if _.indexOf(ids,train.get('id')) is -1
-                console.debug "Train is outdated #{train.get('trainMissionCode')}"
+
                 @remove train
 
     start: =>
@@ -340,7 +353,7 @@ class selector extends bb.View
     </div>
   """
   initialize : ->
-    console.debug('init selector')
+
     @stations = new StationsCollection()
     @connect()
     @render()
@@ -355,7 +368,7 @@ class selector extends bb.View
     @stations.bind 'reset', @refreshStations
 
   appendStation : (Station,collection)=>
-    console.debug 'append stations'
+
     optionFrom = document.createElement 'option'
     optionFrom.innerHTML = Station.get('name')
     optionFrom.value = Station.get('code')
@@ -416,7 +429,7 @@ class trainItem extends bb.View
         @render()
 
     render: =>
-        console.debug "Render train named #{@model.get('trainMissionCode')} at #{new Date().toString()}"
+
 
         obj = @model.toJSON()
         if obj.trainMention == null then obj.trainMention = ""
@@ -447,54 +460,7 @@ class trainList extends bb.View
 
 
     refresh: =>
-        console.debug 'reset view'
-        $(@el).html ''
-        @render()
 
-    setTrainList : (collection)->
-        # if a previous trainList exit, we disconnect the view from it.
-        if @trainList then @trainList.unbind 'add', @appendTrain
-        if @trainList then @trainList.unbind 'remove', @removeTrain
-        if @trainList then @trainList.unbind 'reset', @refresh
-        if collection isnt undefined
-          @trainList = collection
-          @trainList.bind 'add', @appendTrain
-          @trainList.bind 'remove', @removeTrain
-          @trainList.bind 'reset', @refresh
-        else if @trainList
-          @trainList = null
-
-    clearTrainList : ->
-        @trainList = null
-
-    appendTrain :(Train,collection) =>
-        if Train.view is undefined
-           Train.view = new trainItem
-                                model:Train
-        $(@el).find('div').first().append Train.view.el
-    removeTrain : (Train,collection) =>
-        Train.view.remove()
-
-class trainList extends bb.View
-    initialize: ->
-        _.bindAll @
-        @counter = 0
-        @render()
-    className:"row-fluid trainList"
-    render: ->
-
-        if @trainList
-          $(@el).append '<div class="span12"></div>'
-          @trainList.each (Train)=>
-              @appendTrain Train, @trainList
-
-        else
-          empty = new emptyList()
-          $(@el).append empty.el
-
-
-    refresh: =>
-        console.debug 'reset view'
         $(@el).html ''
         @render()
 

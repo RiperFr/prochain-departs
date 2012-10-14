@@ -12,7 +12,7 @@ class trainItem extends bb.View
         @render()
 
     render: =>
-        console.debug "Render train named #{@model.get('trainMissionCode')} at #{new Date().toString()}"
+
 
         obj = @model.toJSON()
         if obj.trainMention == null then obj.trainMention = ""

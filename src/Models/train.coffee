@@ -8,7 +8,7 @@ class Train extends bb.Model
 class TrainCollection extends Backbone.Collection
     model : Train
     initialize: (n,options)->
-        console.debug 'initialize collection'
+
         if options isnt undefined
           @from = options.from unless options.from is undefined
           @to = options.to unless options.to is undefined
@@ -21,12 +21,12 @@ class TrainCollection extends Backbone.Collection
         if xhr.status is 200 and response.status is true
             response.response
         else
-            console.debug 'Error in response from server with parameters '+"#{@from}/#{@to}"
+
             []
     cleanup: (ids) =>
         @.each (train)=>
             if _.indexOf(ids,train.get('id')) is -1
-                console.debug "Train is outdated #{train.get('trainMissionCode')}"
+
                 @remove train
 
     start: =>

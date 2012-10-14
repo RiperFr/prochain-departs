@@ -5,9 +5,16 @@ class Controller extends bb.Router
         else
             @config = new Configuration()
         @config.bind 'change',@saveConfig
-
         @view = new mainView({config:@config})
 
+
+    resume: =>
+        if localStorage.from
+            if localStorage.to
+                @navigate("trains/from/#{localStorage.from}/to/#{localStorage.to}")
+            else
+                @navigate("trains/from/#{localStorage.from}")
+        @resumed = true
 
     saveConfig: =>
         localStorage.configuration = @config.toJSON()
@@ -22,11 +29,11 @@ class Controller extends bb.Router
 
     _updateTimerRefs: (trains)=>
       if @timerStatus is true
-        console.debug 'restart timer'
+
         @stopTimer()
         @trains = trains
       else
-        console.debug 'timer never started'
+
         @trains = trains
       @startTimer()
 
@@ -38,10 +45,10 @@ class Controller extends bb.Router
         'trains/from/:from'        : 'trainsFrom'
 
     trainsFromTo:(from,to) =>
-        console.debug 'from to'
+
         from = from.toUpperCase()
         to = to.toUpperCase()
-        console.debug 'start'
+
         @stopTimer()
         trains = new TrainCollection null,
             from:from
@@ -50,9 +57,11 @@ class Controller extends bb.Router
         @view.selector.setTrainFromTo from,to
         @view.trainList.refresh()
         @_updateTimerRefs(trains)
+        localStorage.from = from unless !@resumed
+        localStorage.to = to unless !@resumed
 
     trainsFrom:(from) =>
-      console.debug 'from only'
+
       from = from.toUpperCase()
       @stopTimer()
       trains = new TrainCollection null,
@@ -61,8 +70,12 @@ class Controller extends bb.Router
       @view.selector.setTrainFrom from
       @view.trainList.refresh()
       @_updateTimerRefs(trains)
+      localStorage.from = from unless !@resumed
+      localStorage.to = null unless !@resumed
 
     emptySelection: =>
       @view.trainList.setTrainList()
       @view.trainList.refresh()
+      localStorage.from = null unless !@resumed
+      localStorage.to = null unless !@resumed
 
