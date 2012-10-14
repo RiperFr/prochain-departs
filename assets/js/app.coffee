@@ -11,7 +11,7 @@ bb.history = Backbone.history
 REGISTER = {}
 init = =>
     REGISTER.router = new Controller
-    Backbone.history.start({pushState : true,sessionStorage : true,root: window.location.pathname})
+    Backbone.history.start({pushState: true, sessionStorage: true, root: window.location.pathname})
 
     hash = Backbone.history.getHash()
     if hash is ""
@@ -23,20 +23,41 @@ init = =>
 
 
 start = =>
-  REGISTER.router.startTimer()
+    REGISTER.router.startTimer()
 
 stop = =>
-  REGISTER.router.stopTimer()
+    REGISTER.router.stopTimer()
 
 pause = =>
-  REGISTER.router.stopTimer()
+    REGISTER.router.stopTimer()
 
 resume = =>
-  REGISTER.router.startTimer()
+    REGISTER.router.startTimer()
 
-$(document).ready =>
-  init()
-  start()
+
+if window.WinJS
+    WinJS.Binding.optimizeBindingReferences = true
+    app = WinJS.Application
+    activation = Windows.ApplicationModel.Activation
+
+    app.onactivated = (args)->
+        if args.detail.kind == activation.ActivationKind.launch
+            if args.detail.previousExecutionState != activation.ApplicationExecutionState.terminated
+                ##Just Started
+                init()
+                start()
+            else
+                #Just reactivated
+                resume()
+            args.setPromise(WinJS.UI.processAll())
+    app.oncheckpoint = (args)->
+        #Will be suspended*
+        pause()
+    app.start()
+else
+    $(document).ready =>
+        init()
+        start()
 
 class Controller extends bb.Router
     initialize: ->
@@ -44,80 +65,88 @@ class Controller extends bb.Router
             @config = new Configuration(localStorage.configuration)
         else
             @config = new Configuration()
-        @config.bind 'change',@saveConfig
-        @view = new mainView({config:@config})
+        @config.bind 'change', @saveConfig
+        @view = new mainView({config: @config})
 
 
     resume: =>
         if localStorage.from
-            if localStorage.to
+            if localStorage.to and localStorage.to != 'null'
                 @navigate("trains/from/#{localStorage.from}/to/#{localStorage.to}")
-            else
+            else if localStorage.from and localStorage.from != 'null'
                 @navigate("trains/from/#{localStorage.from}")
         @resumed = true
 
     saveConfig: =>
         localStorage.configuration = @config.toJSON()
     startTimer: =>
-      @trains.stop() unless @trains is undefined or null
-      @trains.start() unless @trains is undefined or null
-      @timerStatus = true ;
+        @trains.stop() unless @trains is undefined or null
+        @trains.start() unless @trains is undefined or null
+        @timerStatus = true;
 
     stopTimer: =>
-      @trains.stop() unless @trains is undefined or null
-      @timerStatus = false
+        @trains.stop() unless @trains is undefined or null
+        @timerStatus = false
 
     _updateTimerRefs: (trains)=>
-      if @timerStatus is true
+        if @timerStatus is true
 
-        @stopTimer()
-        @trains = trains
-      else
-
-        @trains = trains
-      @startTimer()
-
+            @stopTimer()
+            @trains = trains
+        else
+            @trains = trains
+        @startTimer()
 
 
-    routes :
-        ''                         : 'emptySelection'
-        'trains/from/:from/to/:to' : 'trainsFromTo'
-        'trains/from/:from'        : 'trainsFrom'
 
-    trainsFromTo:(from,to) =>
+    routes:
+        ''                        : 'emptySelection'
+        'trains/from/:from/to/:to': 'trainsFromTo'
+        'trains/from/:from'       : 'trainsFrom'
+
+    trainsFromTo: (from, to) =>
+        if from == 'NULL'
+            @emptySelection()
+            return true
+        if to == 'NULL'
+            @trainsFrom(from)
+            return true
 
         from = from.toUpperCase()
         to = to.toUpperCase()
 
+
         @stopTimer()
         trains = new TrainCollection null,
-            from:from
-            to:to
+            from: from
+            to  : to
         @view.trainList.setTrainList trains
-        @view.selector.setTrainFromTo from,to
+        @view.selector.setTrainFromTo from, to
         @view.trainList.refresh()
         @_updateTimerRefs(trains)
         localStorage.from = from unless !@resumed
         localStorage.to = to unless !@resumed
 
-    trainsFrom:(from) =>
-
-      from = from.toUpperCase()
-      @stopTimer()
-      trains = new TrainCollection null,
-            from:from
-      @view.trainList.setTrainList trains
-      @view.selector.setTrainFrom from
-      @view.trainList.refresh()
-      @_updateTimerRefs(trains)
-      localStorage.from = from unless !@resumed
-      localStorage.to = null unless !@resumed
+    trainsFrom: (from) =>
+        from = from.toUpperCase()
+        if from == 'NULL'
+            @emptySelection()
+            return true
+        @stopTimer()
+        trains = new TrainCollection null,
+            from: from
+        @view.trainList.setTrainList trains
+        @view.selector.setTrainFrom from
+        @view.trainList.refresh()
+        @_updateTimerRefs(trains)
+        localStorage.from = from unless !@resumed
+        localStorage.to = null unless !@resumed
 
     emptySelection: =>
-      @view.trainList.setTrainList()
-      @view.trainList.refresh()
-      localStorage.from = null unless !@resumed
-      localStorage.to = null unless !@resumed
+        @view.trainList.setTrainList()
+        @view.trainList.refresh()
+        localStorage.from = null unless !@resumed
+        localStorage.to = null unless !@resumed
 
 
 
@@ -205,12 +234,11 @@ class Train extends bb.Model
 class TrainCollection extends Backbone.Collection
     model : Train
     initialize: (n,options)->
-
         if options isnt undefined
           @from = options.from unless options.from is undefined
           @to = options.to unless options.to is undefined
     url: =>
-        if @to isnt undefined
+        if @to isnt undefined and @to isnt null and @to != 'NULL'
           "https://www.riper.fr/api/stif/trains/from/#{@from}/to/#{@to}"
         else
           "https://www.riper.fr/api/stif/trains/from/#{@from}"
@@ -222,8 +250,7 @@ class TrainCollection extends Backbone.Collection
             []
     cleanup: (ids) =>
         @.each (train)=>
-            if _.indexOf(ids,train.get('id')) is -1
-
+            if _.indexOf(ids,train.get('id')) is -1 ##-1 mean not present
                 @remove train
 
     start: =>
@@ -428,18 +455,73 @@ class trainItem extends bb.View
         @model.bind "change", @render
         @render()
 
+    remove: =>
+        @.$el.addClass('removed')
+        @removed = true
+        @render()
+        setTimeout(()=>
+            @.$el.addClass('realy')
+            setTimeout(()=>
+                @.$el.remove()
+            ,10000)
+        ,60000)
     render: =>
-
-
         obj = @model.toJSON()
         if obj.trainMention == null then obj.trainMention = ""
         if obj.trainMention != '' then @.$el.addClass('hasMention') else @.$el.removeClass('hasMention')
         if obj.trainMention == '' and obj.trainLane then obj.trainMention = obj.trainLane
+        if @removed == true then obj.trainMention = 'à quai'
         obj.time = obj.trainHour.split(' ')[1]
-
         @.$el.html @template(obj)
         @
 
+
+class trainList extends bb.View
+    initialize: ->
+        _.bindAll @
+        @counter = 0
+        @render()
+    className:"row-fluid trainList"
+    render: ->
+
+        if @trainList
+          $(@el).append '<div class="span12"></div>'
+          @trainList.each (Train)=>
+              @appendTrain Train, @trainList
+
+        else
+          empty = new emptyList()
+          $(@el).append empty.el
+
+
+    refresh: =>
+
+        $(@el).html ''
+        @render()
+
+    setTrainList : (collection)->
+        # if a previous trainList exit, we disconnect the view from it.
+        if @trainList then @trainList.unbind 'add', @appendTrain
+        if @trainList then @trainList.unbind 'remove', @removeTrain
+        if @trainList then @trainList.unbind 'reset', @refresh
+        if collection isnt undefined
+          @trainList = collection
+          @trainList.bind 'add', @appendTrain
+          @trainList.bind 'remove', @removeTrain
+          @trainList.bind 'reset', @refresh
+        else if @trainList
+          @trainList = null
+
+    clearTrainList : ->
+        @trainList = null
+
+    appendTrain :(Train,collection) =>
+        if Train.view is undefined
+           Train.view = new trainItem
+                                model:Train
+        $(@el).find('div').first().append Train.view.el
+    removeTrain : (Train,collection) =>
+        Train.view.remove()
 
 class trainList extends bb.View
     initialize: ->

@@ -1,7 +1,7 @@
 REGISTER = {}
 init = =>
     REGISTER.router = new Controller
-    Backbone.history.start({pushState : true,sessionStorage : true,root: window.location.pathname})
+    Backbone.history.start({pushState: true, sessionStorage: true, root: window.location.pathname})
 
     hash = Backbone.history.getHash()
     if hash is ""
@@ -13,17 +13,38 @@ init = =>
 
 
 start = =>
-  REGISTER.router.startTimer()
+    REGISTER.router.startTimer()
 
 stop = =>
-  REGISTER.router.stopTimer()
+    REGISTER.router.stopTimer()
 
 pause = =>
-  REGISTER.router.stopTimer()
+    REGISTER.router.stopTimer()
 
 resume = =>
-  REGISTER.router.startTimer()
+    REGISTER.router.startTimer()
 
-$(document).ready =>
-  init()
-  start()
+
+if window.WinJS
+    WinJS.Binding.optimizeBindingReferences = true
+    app = WinJS.Application
+    activation = Windows.ApplicationModel.Activation
+
+    app.onactivated = (args)->
+        if args.detail.kind == activation.ActivationKind.launch
+            if args.detail.previousExecutionState != activation.ApplicationExecutionState.terminated
+                ##Just Started
+                init()
+                start()
+            else
+                #Just reactivated
+                resume()
+            args.setPromise(WinJS.UI.processAll())
+    app.oncheckpoint = (args)->
+        #Will be suspended*
+        pause()
+    app.start()
+else
+    $(document).ready =>
+        init()
+        start()

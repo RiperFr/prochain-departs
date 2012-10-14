@@ -141,6 +141,109 @@ body.dark .trainLine{
     border: 1px solid rgba(255,255,255,0.5);
 }
 
+body .trainLine.removed{
+    animation-name: trainLineRemoving;
+    animation-duration: 2s;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+    animation-timing-function: ease-in-out;
+
+    -webkit-animation-name: trainLineRemoving;
+    -webkit-animation-duration: 2s;
+    -webkit-animation-iteration-count: infinite;
+    -webkit-animation-direction: alternate;
+    -webkit-animation-timing-function: ease-in-out;
+
+    -moz-animation-name: trainLineRemoving;
+    -moz-animation-duration: 2s;
+    -moz-animation-iteration-count: infinite;
+    -moz-animation-direction: alternate;
+    -moz-animation-timing-function: ease-in-out;
+
+    -o-animation-name: trainLineRemoving;
+    -o-animation-duration: 2s;
+    -o-animation-iteration-count: infinite;
+    -o-animation-direction: alternate;
+    -o-animation-timing-function: ease-in-out;
+
+
+}
+
+body .trainLine.removed.realy{
+
+    transition-property: all;
+    transition-duration: 2s;
+    transition-timing-fonction: ease-in-out;
+
+    -moz-transition-property: all;
+    -moz-transition-duration: 2s;
+    -moz-transition-timing-fonction: ease-in-out;
+
+    -o-transition-property: all;
+    -o-transition-duration: 2s;
+    -o-transition-timing-fonction: ease-in-out;
+
+    -webkit-transition-property: all;
+    -webkit-transition-duration: 2s;
+    -webkit-transition-timing-fonction: ease-in-out;
+
+    -o-animation : none ;
+    -webkit-animation : none ;
+    -moz-animation : none ;
+    animation : none ;
+
+    margin-top:-1.2em;
+    margin-bottom:0;
+    border-top:0;
+    border-bottom:0;
+    opacity:0;
+
+}
+@-webkit-keyframes trainLineRemoving {
+	0%   {
+	    opacity: 1;
+	}
+	50%   {
+	    opacity: 0.3;
+	 }
+	100% {
+	    opacity: 1;
+	}
+}
+@-o-keyframes trainLineRemoving {
+	0%   {
+	    opacity: 1;
+	}
+	50%   {
+	    opacity: 0.3;
+	 }
+	100% {
+	    opacity: 1;
+	}
+}
+@-moz-keyframes trainLineRemoving {
+	0%   {
+	    opacity: 1;
+	}
+	50%   {
+	    opacity: 0.3;
+	 }
+	100% {
+	    opacity: 1;
+	}
+}
+@keyframes trainLineRemoving {
+	0%   {
+	    opacity: 1;
+	}
+	50%   {
+	    opacity: 0.3;
+	 }
+	100% {
+	    opacity: 1;
+	}
+}
+
 
 
 .trainLine .trainCode{

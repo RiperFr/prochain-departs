@@ -8,12 +8,11 @@ class Train extends bb.Model
 class TrainCollection extends Backbone.Collection
     model : Train
     initialize: (n,options)->
-
         if options isnt undefined
           @from = options.from unless options.from is undefined
           @to = options.to unless options.to is undefined
     url: =>
-        if @to isnt undefined
+        if @to isnt undefined and @to isnt null and @to != 'NULL'
           "https://www.riper.fr/api/stif/trains/from/#{@from}/to/#{@to}"
         else
           "https://www.riper.fr/api/stif/trains/from/#{@from}"
@@ -25,8 +24,7 @@ class TrainCollection extends Backbone.Collection
             []
     cleanup: (ids) =>
         @.each (train)=>
-            if _.indexOf(ids,train.get('id')) is -1
-
+            if _.indexOf(ids,train.get('id')) is -1 ##-1 mean not present
                 @remove train
 
     start: =>
