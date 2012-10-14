@@ -27,7 +27,7 @@ class mainView extends bb.View
         @$('.list').append(@trainList.el)
         @$('.selector').append(@selector.el)
         @$('.digitalClock').append(@clock.el)
-        if if window.WinJS
+        if window.WinJS
             MSApp.execUnsafeLocalFunction ()->
                 $('.themeSelector').html('<input type="checkbox" name="light" value="1" >')
         else

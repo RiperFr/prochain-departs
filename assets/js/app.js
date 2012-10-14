@@ -702,9 +702,13 @@
       this.$('.list').append(this.trainList.el);
       this.$('.selector').append(this.selector.el);
       this.$('.digitalClock').append(this.clock.el);
-      MSApp.execUnsafeLocalFunction(function() {
-        return $('.themeSelector').html('<input type="checkbox" name="light" value="1" >');
-      });
+      if (window.WinJS) {
+        MSApp.execUnsafeLocalFunction(function() {
+          return $('.themeSelector').html('<input type="checkbox" name="light" value="1" >');
+        });
+      } else {
+        $('.themeSelector').html('<input type="checkbox" name="light" value="1" >');
+      }
       if (this.config.get('theme') === 'light') {
         $('.themeSelector input[type="checkbox"]').attr('checked', true);
       }
