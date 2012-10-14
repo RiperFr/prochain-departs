@@ -32,7 +32,7 @@ class TrainCollection extends Backbone.Collection
     start: =>
         if @timer then clearInterval @timer
         @updateTrainList()
-        @timer = setInterval @updateTrainList, 2000
+        @timer = setInterval @updateTrainList, 5000
     stop: =>
         if @timer then clearInterval @timer
 

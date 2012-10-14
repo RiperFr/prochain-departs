@@ -1,8 +1,13 @@
 class selector extends bb.View
   template: _.template """
-  Prochains départs de <select class="selectFrom"></select> à <select class="selectTo"></select>
+    <div class="row-fluid selectorLine">
+        <div class="span12 ">
+            <h5>Liste des prochains trains au départ de </h5><select class="selectFrom"></select> <h5>en direction de</h5> <select class="selectTo"></select>
+        </div>
+    </div>
   """
   initialize : ->
+    console.debug('init selector')
     @stations = new StationsCollection()
     @connect()
     @render()

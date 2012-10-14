@@ -3,12 +3,14 @@ class trainList extends bb.View
         _.bindAll @
         @counter = 0
         @render()
+    className:"row-fluid trainList"
     render: ->
 
         if @trainList
-          $(@el).append '<ul></ul>'
+          $(@el).append '<div class="span12"></div>'
           @trainList.each (Train)=>
               @appendTrain Train, @trainList
+
         else
           empty = new emptyList()
           $(@el).append empty.el
@@ -33,12 +35,12 @@ class trainList extends bb.View
           @trainList = null
 
     clearTrainList : ->
-      @trainList = null ;
+        @trainList = null
 
     appendTrain :(Train,collection) =>
         if Train.view is undefined
            Train.view = new trainItem
                                 model:Train
-        $(@el).find('ul').first().append Train.view.el
+        $(@el).find('div').first().append Train.view.el
     removeTrain : (Train,collection) =>
         Train.view.remove()

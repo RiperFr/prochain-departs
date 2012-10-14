@@ -1,0 +1,126 @@
+﻿
+.digitalClock{
+    font-family: DSDigital, sans-serif ;
+}
+/** Options **/
+.digitalClock.display24h .ampm{
+    display:none;
+}
+.digitalClock.noMilli .milliseconds{
+    display:none;
+}
+.digitalClock.noSeconds .seconds,.digitalClock.noSeconds .dotsSeconds{
+    display:none;
+}
+
+/**Structure **/
+.digitalClock>div{
+    display:inline-block;
+    margin:0;
+    padding:0;
+}
+
+.digitalClock .ampm{
+    font-size: 0.5em
+}
+.digitalClock .milliseconds{
+    font-size: 0.2em
+}
+.digitalClock .dots{
+    margin-left:-0.3em;
+    margin-right:-0.3em;
+}
+
+/** animations **/
+.digitalClock .dots{
+    animation-name: dotsdots;
+    animation-duration: 2s;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+    animation-timing-function: ease-in-out;
+    -webkit-animation-name: dotsdots;
+    -webkit-animation-duration: 2s;
+    -webkit-animation-iteration-count: infinite;
+    -webkit-animation-direction: alternate;
+    -webkit-animation-timing-function: ease-in-out;
+
+    -moz-animation-name: dotsdots;
+    -moz-animation-duration: 2s;
+    -moz-animation-iteration-count: infinite;
+    -moz-animation-direction: alternate;
+    -moz-animation-timing-function: ease-in-out;
+
+    -o-animation-name: dotsdots;
+    -o-animation-duration: 2s;
+    -o-animation-iteration-count: infinite;
+    -o-animation-direction: alternate;
+    -o-animation-timing-function: ease-in-out;
+
+    font-size:0.8em;
+    /*font-family:impact;*/
+}
+@-webkit-keyframes dotsdots {
+	0%   {
+	    opacity: 0;
+	}
+	50%   {
+	    opacity: 1;
+	 }
+	100% {
+	    opacity: 0;
+	}
+}
+@-o-keyframes dotsdots {
+	0%   {
+	    opacity: 0;
+	}
+	50%   {
+	    opacity: 1;
+	 }
+	100% {
+	    opacity: 0;
+	}
+}
+@-moz-keyframes dotsdots {
+	0%   {
+	    opacity: 0;
+	}
+	50%   {
+	    opacity: 1;
+	 }
+	100% {
+	    opacity: 0;
+	}
+}
+@keyframes  dotsdots {
+	0%   {
+	    opacity: 0;
+	}
+	50%   {
+	    opacity: 1;
+	 }
+	100% {
+	    opacity: 0;
+	}
+}
+
+@font-face {
+    font-family: "DSDigital";
+    src: url('fonts/ds-digi-webfont.eot');
+    src: url('fonts/ds-digi-webfont.eot?#iefix') format('embedded-opentype'),
+    url('fonts/ds-digi-webfont.woff') format('woff'),
+    url('fonts/ds-digi-webfont.ttf') format('truetype'),
+    url('fonts/ds-digi-webfont.svg#DS-DigitalNormal') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Digital-7Mono';
+    src: url('fonts/digital7/digital-7_mono-webfont.eot');
+    src: url('fonts/digital7/digital-7_mono-webfont.eot?#iefix') format('embedded-opentype'),
+    url('fonts/digital7/digital-7_mono-webfont.woff') format('woff'),
+    url('fonts/digital7/digital-7_mono-webfont.ttf') format('truetype'),
+    url('fonts/digital7/digital-7_mono-webfont.svg#Digital-7Mono') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}

@@ -1,7 +1,16 @@
 class Controller extends bb.Router
     initialize: ->
-        @view = new mainView
+        if  localStorage.configuration
+            @config = new Configuration(localStorage.configuration)
+        else
+            @config = new Configuration()
+        @config.bind 'change',@saveConfig
 
+        @view = new mainView({config:@config})
+
+
+    saveConfig: =>
+        localStorage.configuration = @config.toJSON()
     startTimer: =>
       @trains.stop() unless @trains is undefined or null
       @trains.start() unless @trains is undefined or null
